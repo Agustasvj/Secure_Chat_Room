@@ -26,7 +26,7 @@ def get_local_ip():
         s.close()
         return ip
     except Exception as e:
-        print(f"[!] Local IP detection fucked: {e}")
+        print(f"[!] Local IP detection failed: {e}")
         return "127.0.0.1"
 
 # Routes
@@ -40,10 +40,10 @@ def register():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         if username in USERS:
-            flash("Username taken, pick another, dipshit!")
+            flash("Username taken, pick another one!")
             return render_template('register.html')
         if not username or not password:
-            flash("Fill all fields, asshole!")
+            flash("Fill all fields!")
             return render_template('register.html')
         USERS[username] = password
         print(f"[DEBUG] User registered: {username}")
@@ -60,7 +60,7 @@ def login():
             session['user'] = username
             print(f"[DEBUG] Login success: {username}")
             return redirect(url_for('choice'))
-        flash("Wrong fuckin creds, asshole!")
+        flash("Wrong creds!")
         print(f"[DEBUG] Login failed: {username}")
     return render_template('login.html')
 
@@ -80,13 +80,13 @@ def create_room():
         print(f"[DEBUG] User {session['user']} creating room: {room_name}")
         with rooms_lock:
             if len(ROOMS) >= MAX_ROOMS:
-                flash("Max rooms hit, you fuck!")
+                flash("Max rooms hit!")
                 return render_template('create_room.html', room_key=room_key)
             if room_name in ROOMS:
-                flash("Room name taken, asshole!")
+                flash("Room name taken!")
                 return render_template('create_room.html', room_key=room_key)
             if not room_name:
-                flash("Enter a room name, dipshit!")
+                flash("Enter a room name!")
                 return render_template('create_room.html', room_key=room_key)
             room_key = Fernet.generate_key().decode()
             ROOMS[room_name] = {'key': room_key, 'users': [], 'creator': session['user']}
@@ -107,22 +107,22 @@ def handle_join(data):
     room = data['room']
     room_key = data['room_key']
     if 'user' not in session:
-        emit('error', {'message': 'Not logged in, you fuck!'})
+        emit('error', {'message': 'Not logged in!'})
         return
     with rooms_lock:
         if room not in ROOMS:
-            emit('error', {'message': 'Room doesn’t exist, asshole!'})
+            emit('error', {'message': 'Room doesn’t exist!'})
             return
         if ROOMS[room]['key'] != room_key:
-            emit('error', {'message': 'Wrong room key, dipshit!'})
+            emit('error', {'message': 'Wrong room key!'})
             return
         if nickname in ROOMS[room]['users']:
-            emit('error', {'message': 'Nickname taken, pick another, fuck!'})
+            emit('error', {'message': 'Nickname taken, pick another one'})
             return
         ROOMS[room]['users'].append(nickname)
         join_room(room)
         emit('joined', {'room': room, 'creator': ROOMS[room]['creator']})
-        socketio.emit('message', {'msg': f'{nickname} joined the shitshow!', 'room': room}, room=room)
+        socketio.emit('message', {'msg': f'{nickname} joined the personal_chat!', 'room': room}, room=room)
         print(f"[*] {nickname} joined {room} - Users: {len(ROOMS[room]['users'])}")
 
 @socketio.on('leave')
@@ -133,14 +133,14 @@ def handle_leave(data):
         if room in ROOMS and nickname in ROOMS[room]['users']:
             ROOMS[room]['users'].remove(nickname)
             leave_room(room)
-            socketio.emit('message', {'msg': f'{nickname} fucked off!', 'room': room}, room=room)
+            socketio.emit('message', {'msg': f'{nickname} left!', 'room': room}, room=room)
             print(f"[*] {nickname} left {room} - Users: {len(ROOMS[room]['users'])}")
 
 @socketio.on('end_room')
 def handle_end_room(data):
     room = data['room']
     if 'user' not in session or session['user'] != ROOMS.get(room, {}).get('creator'):
-        emit('error', {'message': 'Only the creator can end this shit!'})
+        emit('error', {'message': 'Only the creator can end this room!'})
         return
     with rooms_lock:
         if room in ROOMS:

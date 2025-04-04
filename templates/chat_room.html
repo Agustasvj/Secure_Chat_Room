@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Shitshow</title>
+    <title>Secure_Chat_Room</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chat_room.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Chat Shitshow</h1>
+        <h1>Secure_Chat_Room</h1>
         <div class="input-group">
             <label for="nickname">Nickname</label>
             <input type="text" id="nickname" placeholder="Choose a nickname">
@@ -73,7 +73,7 @@
             room = document.getElementById('room').value.trim();
             const room_key = document.getElementById('room_key').value.trim();
             if (!nickname || !room || !room_key) {
-                alert('Fill all fields, dipshit!');
+                alert('Fill all fields!');
                 return;
             }
             socket.emit('join', { nickname, room, room_key });

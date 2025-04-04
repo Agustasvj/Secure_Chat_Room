@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Room - Chat Shitshow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_room.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Create Room</h1>
+        <form method="POST">
+            <div class="input-group">
+                <label for="room_name">Room Name</label>
+                <input type="text" id="room_name" name="room_name" placeholder="Enter room name" required>
+            </div>
+            <button type="submit">Create Room</button>
+        </form>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% if room_key %}
+            <div class="room-key">Room Key: {{ room_key }}</div>
+            <a href="{{ url_for('chat_room') }}">Proceed to Chat Room</a>
+        {% endif %}
+    </div>
+</body>
+</html>

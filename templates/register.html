@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Chat Shitshow</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <title>Register - Chat Shitshow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Login</h1>
+        <h1>Register</h1>
         <form method="POST">
             <div class="input-group">
                 <label for="username">Username</label>
@@ -18,7 +18,7 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Enter password" required>
             </div>
-            <button type="submit">Login</button>
+            <button type="submit">Register</button>
         </form>
         {% with messages = get_flashed_messages() %}
             {% if messages %}

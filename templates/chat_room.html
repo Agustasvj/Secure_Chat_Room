@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Shitshow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat_room.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Chat Shitshow</h1>
+        <div class="input-group">
+            <label for="nickname">Nickname</label>
+            <input type="text" id="nickname" placeholder="Choose a nickname">
+        </div>
+        <div class="input-group">
+            <label for="room">Room Name</label>
+            <input type="text" id="room" placeholder="Enter room name">
+        </div>
+        <div class="input-group">
+            <label for="room_key">Room Key</label>
+            <input type="text" id="room_key" placeholder="Enter room key">
+        </div>
+        <div class="button-group">
+            <button onclick="joinRoom()">Join Room</button>
+            <button onclick="leaveRoom()" id="leaveBtn" disabled>Leave Room</button>
+            <a href="{{ url_for('create_room') }}">Create New Room</a>
+        </div>
+        <div id="chat"></div>
+        <div class="input-group">
+            <input type="text" id="message" placeholder="Type your message" disabled>
+        </div>
+        <div class="button-group">
+            <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+            <button onclick="endRoom()" id="endBtn" disabled>End Room</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let nickname = null;
+        let room = null;
+        let creator = null;
+
+        socket.on('connect', () => console.log('Connected, slick!'));
+        socket.on('error', (data) => alert(data.message));
+        socket.on('joined', (data) => {
+            room = data.room;
+            creator = data.creator;
+            document.getElementById('message').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('leaveBtn').disabled = false;
+            document.getElementById('endBtn').disabled = creator !== '{{ session['user'] }}';
+        });
+        socket.on('message', (data) => {
+            console.log(`[CLIENT] Received: ${data.msg} for room ${data.room}`);
+            if (data.room === room) {
+                const chat = document.getElementById('chat');
+                const msg = document.createElement('div');
+                msg.className = 'message';
+                msg.textContent = data.msg;
+                chat.appendChild(msg);
+                chat.scrollTop = chat.scrollHeight;
+                if (data.msg.includes('Room') && data.msg.includes('done')) {
+                    resetChat();
+                }
+            }
+        });
+
+        function joinRoom() {
+            nickname = document.getElementById('nickname').value.trim();
+            room = document.getElementById('room').value.trim();
+            const room_key = document.getElementById('room_key').value.trim();
+            if (!nickname || !room || !room_key) {
+                alert('Fill all fields, dipshit!');
+                return;
+            }
+            socket.emit('join', { nickname, room, room_key });
+        }
+
+        function leaveRoom() {
+            socket.emit('leave', { nickname, room });
+            resetChat();
+        }
+
+        function endRoom() {
+            socket.emit('end_room', { room });
+            resetChat();
+        }
+
+        function sendMessage() {
+            const msg = document.getElementById('message').value.trim();
+            if (msg) {
+                console.log(`[CLIENT] Sending: ${msg} to room ${room}`);
+                socket.emit('message', { room, msg, nickname });
+                document.getElementById('message').value = '';
+            }
+        }
+
+        function resetChat() {
+            document.getElementById('message').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('leaveBtn').disabled = true;
+            document.getElementById('endBtn').disabled = true;
+            room = null;
+        }
+
+        document.getElementById('message').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !document.getElementById('sendBtn').disabled) {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

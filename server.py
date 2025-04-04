@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from cryptography.fernet import Fernet
 import threading
 import socket
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
@@ -125,4 +126,4 @@ if __name__ == "__main__":
     local_ip = get_local_ip()
     print(f"[SIERRA] Server’s up! Local IP: {local_ip}, Port: 5555, Key: {key.decode()}")
     print(f"[!] Hotspot: http://{local_ip}:5555 | Ngrok: 'ngrok http 5555'")
-    socketio.run(app, host='0.0.0.0', port=5555, debug=True, use_reloader=False)
+    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5555)), debug=False, use_reloader=False)
